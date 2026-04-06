@@ -3,13 +3,11 @@ using Orbital.Application.Common.Exceptions;
 using Orbital.Application.Common.Interfaces;
 using Orbital.Domain.Interfaces;
 using Orbital.Domain.Rings;
-using Orbital.Domain.Sites;
 
 namespace Orbital.Application.Rings.Commands.CreateRing;
 
 public sealed class CreateRingCommandHandler(
     IRingRepository ringRepository,
-    ISiteRepository siteRepository,
     IUnitOfWork unitOfWork,
     ICurrentUserService currentUserService)
     : IRequestHandler<CreateRingCommand, CreateRingResponse>
@@ -20,15 +18,8 @@ public sealed class CreateRingCommandHandler(
             throw new UnauthorizedException();
 
         var ownerId = currentUserService.UserId!.Value;
-        var siteId = SiteId.From(request.OwnerSiteId);
 
-        var site = await siteRepository.FindByIdAsync(siteId, cancellationToken)
-            ?? throw NotFoundException.For("Site", request.OwnerSiteId);
-
-        if (site.OwnerUserId != ownerId)
-            throw new UnauthorizedException("You do not own this site.");
-
-        var ringResult = Ring.Create(ownerId, siteId, request.Name, request.Description, request.Visibility);
+        var ringResult = Ring.Create(ownerId, request.Name, request.Description, request.Visibility);
         if (ringResult.IsFailure)
             throw new DomainException(ringResult.Error!);
 

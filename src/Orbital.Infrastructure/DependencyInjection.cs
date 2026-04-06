@@ -21,15 +21,19 @@ public static class DependencyInjection
     {
         // Database
         var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? "Data Source=orbital.db";
+            ?? "Data Source=smallorbit.db";
 
         services.AddDbContext<OrbitalDbContext>(options =>
-            options.UseSqlite(connectionString));
+            options.UseSqlite(connectionString)
+                   .ConfigureWarnings(w => w.Ignore(
+                       Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ISiteRepository, SiteRepository>();
         services.AddScoped<IRingRepository, RingRepository>();
+        services.AddScoped<IRingApiKeyRepository, RingApiKeyRepository>();
+        services.AddScoped<INavigationEventRepository, NavigationEventRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         // Auth
@@ -65,6 +69,7 @@ public static class DependencyInjection
             client.DefaultRequestHeaders.Add("User-Agent", "OrbitalVerificationBot/1.0");
         });
         services.AddScoped<ISiteVerificationService, SiteVerificationService>();
+        services.AddScoped<ISnippetCheckService, SnippetCheckService>();
 
         return services;
     }

@@ -11,6 +11,8 @@ public sealed class RingMembership : Entity<MembershipId>
     public MembershipStatus Status { get; private set; }
     public int OrderIndex { get; internal set; }
     public DateTime JoinedAt { get; private set; }
+    public string? ApplicantName { get; private set; }
+    public string? ContactEmail { get; private set; }
 
     private RingMembership() { }
 
@@ -26,16 +28,25 @@ public sealed class RingMembership : Entity<MembershipId>
             JoinedAt = DateTime.UtcNow
         };
 
-    internal static RingMembership CreatePending(RingId ringId, SiteId siteId) =>
+    internal static RingMembership CreatePendingApproval(RingId ringId, SiteId siteId) =>
+        CreateApplication(ringId, siteId, MembershipStatus.PendingApproval, null, null);
+    internal static RingMembership CreateApplication(
+        RingId ringId,
+        SiteId siteId,
+        MembershipStatus status,
+        string? applicantName,
+        string? contactEmail) =>
         new()
         {
             Id = MembershipId.New(),
             RingId = ringId,
             SiteId = siteId,
             Role = MembershipRole.Member,
-            Status = MembershipStatus.Pending,
+            Status = status,
             OrderIndex = -1,
-            JoinedAt = DateTime.UtcNow
+            JoinedAt = DateTime.UtcNow,
+            ApplicantName = applicantName?.Trim(),
+            ContactEmail = contactEmail?.Trim()
         };
 
     internal void Approve(int orderIndex)
@@ -44,5 +55,9 @@ public sealed class RingMembership : Entity<MembershipId>
         OrderIndex = orderIndex;
     }
 
-    internal void Reject() => Status = MembershipStatus.Rejected;
-}
+    internal void MarkPendingApproval()
+    {
+        Status = MembershipStatus.PendingApproval;
+    }
+
+    internal void Reject() => Status = MembershipStatus.Rejected;}

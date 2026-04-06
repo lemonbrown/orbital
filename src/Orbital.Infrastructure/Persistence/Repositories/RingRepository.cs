@@ -14,7 +14,15 @@ public sealed class RingRepository(OrbitalDbContext db) : IRingRepository
         db.Rings
             .Include(r => r.Memberships)
             .Include(r => r.Edges)
+            .Include(r => r.ApiKeys)
             .FirstOrDefaultAsync(r => r.Id == id, ct);
+
+    public Task<Ring?> FindBySlugWithDetailsAsync(string slug, CancellationToken ct = default) =>
+        db.Rings
+            .Include(r => r.Memberships)
+            .Include(r => r.Edges)
+            .Include(r => r.ApiKeys)
+            .FirstOrDefaultAsync(r => r.Slug == slug, ct);
 
     public async Task<IReadOnlyList<Ring>> GetPublicRingsAsync(CancellationToken ct = default) =>
         await db.Rings
@@ -32,4 +40,10 @@ public sealed class RingRepository(OrbitalDbContext db) : IRingRepository
 
     public async Task AddAsync(Ring ring, CancellationToken ct = default) =>
         await db.Rings.AddAsync(ring, ct);
+
+    public Task DeleteAsync(Ring ring, CancellationToken ct = default)
+    {
+        db.Rings.Remove(ring);
+        return Task.CompletedTask;
+    }
 }

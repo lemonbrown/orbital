@@ -10,7 +10,7 @@ export function Navbar() {
     <nav className="border-b border-gray-200 bg-white">
       <div className="mx-auto max-w-5xl px-4 flex h-14 items-center justify-between">
         <Link to="/" className="font-bold text-lg text-violet-600 tracking-tight">
-          ⬡ Orbital
+          ⬡ <span className="font-light">small</span>orbit
         </Link>
         <div className="flex items-center gap-4">
           {user ? (
@@ -22,14 +22,6 @@ export function Navbar() {
                 }
               >
                 Dashboard
-              </NavLink>
-              <NavLink
-                to="/sites"
-                className={({ isActive }) =>
-                  `text-sm font-medium ${isActive ? 'text-violet-600' : 'text-gray-600 hover:text-gray-900'}`
-                }
-              >
-                Sites
               </NavLink>
               <NavLink
                 to="/rings"

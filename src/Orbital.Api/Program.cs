@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbital.Api.Endpoints;
 using Orbital.Api.Middleware;
+using Orbital.Api.Services;
 using Orbital.Application;
 using Orbital.Infrastructure;
 using Orbital.Infrastructure.Persistence;
@@ -10,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddScoped<RingApiKeyAuthService>();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
@@ -59,5 +61,6 @@ app.MapGroup("/api/auth").MapAuthEndpoints().WithTags("Auth");
 app.MapGroup("/api/sites").MapSiteEndpoints().WithTags("Sites");
 app.MapGroup("/api/rings").MapRingEndpoints().WithTags("Rings");
 app.MapGroup("/api/navigate").MapNavigationEndpoints().WithTags("Navigation");
+app.MapGroup("/api/applications").MapApplicationEndpoints().WithTags("Applications");
 
 app.Run();

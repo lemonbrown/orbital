@@ -19,7 +19,17 @@ public sealed class SiteUrl : ValueObject
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
             return Result.Failure<SiteUrl>("URL must be a valid HTTP or HTTPS address.");
 
-        return Result.Success(new SiteUrl(value));
+        // Normalize: upgrade to https, lowercase scheme+host, strip trailing slash
+        var builder = new UriBuilder(uri)
+        {
+            Scheme = Uri.UriSchemeHttps,
+            Host = uri.Host.ToLowerInvariant(),
+            Port = uri.IsDefaultPort ? -1 : uri.Port
+        };
+
+        var normalized = builder.Uri.AbsoluteUri.TrimEnd('/');
+
+        return Result.Success(new SiteUrl(normalized));
     }
 
     protected override IEnumerable<object?> GetEqualityComponents()

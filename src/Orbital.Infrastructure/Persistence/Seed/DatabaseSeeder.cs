@@ -14,34 +14,67 @@ public static class DatabaseSeeder
 
         logger.LogInformation("Seeding development data…");
 
-        // Create demo user
+        // Demo user
         var userResult = User.Create("demouser", "demo@orbital.dev", "Demo1234!");
         if (userResult.IsFailure) throw new InvalidOperationException(userResult.Error);
         var user = userResult.Value;
         await db.Users.AddAsync(user);
 
-        // Create two demo sites
-        var site1Result = Site.Create(user.Id, "Demo Blog", "https://demoblog.example.com", "A demo blog site");
-        var site2Result = Site.Create(user.Id, "Demo Portfolio", "https://portfolio.example.com", "A demo portfolio");
-        if (site1Result.IsFailure || site2Result.IsFailure) throw new InvalidOperationException("Seed site creation failed.");
+        // Sites
+        var siteData = new[]
+        {
+            ("Robb Knight",         "https://rknight.me",             "Personal site and blog of Robb Knight."),
+            ("Keenan",              "https://gkeenan.co",             "Blog and personal musings from Keenan."),
+            ("Flamed",              "https://flamed.dk",              "Danish indie blogger writing about the web."),
+            ("Manu",                "https://manuelmoreale.com",      "Personal blog by Manu Moreale."),
+            ("Sophie Koonin",       "https://localghost.dev",         "Web developer and blogger."),
+            ("Wouter Groeneveld",   "https://brainbaking.com",        "Brain Baking — thoughts on software and learning."),
+            ("Terence Eden",        "https://shkspr.mobi",            "Terence Eden's personal blog."),
+            ("Clive Thompson",      "https://clivethompson.medium.com","Tech journalist and author."),
+            ("Jan-Lukas Else",      "https://jlelse.blog",            "Personal blog by Jan-Lukas Else."),
+            ("Winnie Lim",          "https://winnielim.org",          "Designer and writer."),
+            ("Alexey Guzey",        "https://guzey.com",              "Research and ideas blog."),
+            ("Tom MacWright",       "https://macwright.com",          "Software developer and writer."),
+            ("Brandur Leach",       "https://brandur.org",            "Engineering blog by Brandur Leach."),
+            ("Julia Evans",         "https://jvns.ca",                "Programming zines and posts by Julia Evans."),
+            ("Simon Willison",      "https://simonwillison.net",      "Web developer and co-creator of Django."),
+            ("Maggie Appleton",     "https://maggieappleton.com",     "Illustrated essays on programming and culture."),
+            ("Jim Nielsen",         "https://blog.jim-nielsen.com",   "Thoughts on design and the web."),
+            ("Baldur Bjarnason",    "https://www.baldurbjarnason.com","Writing on ebooks, the web, and publishing."),
+        };
 
-        var site1 = site1Result.Value;
-        var site2 = site2Result.Value;
-        site1.MarkVerified();
-        site2.MarkVerified();
+        var sites = new List<Site>();
+        foreach (var (name, url, desc) in siteData)
+        {
+            var result = Site.Create(user.Id, name, url, desc);
+            if (result.IsFailure) throw new InvalidOperationException(result.Error);
+            var site = result.Value;
+            site.MarkVerified();
+            sites.Add(site);
+        }
+        await db.Sites.AddRangeAsync(sites);
 
-        await db.Sites.AddRangeAsync(site1, site2);
-
-        // Create a demo public ring with both sites
-        var ringResult = Ring.Create(user.Id, site1.Id, "Demo Ring", "A demonstration web ring", RingVisibility.Public);
+        // Ring
+        var ringResult = Ring.Create(user.Id, "Indie Web Bloggers", "A ring of personal blogs and indie web sites worth reading.");
         if (ringResult.IsFailure) throw new InvalidOperationException(ringResult.Error);
         var ring = ringResult.Value;
 
-        ring.RequestJoin(site2.Id);
+        ring.UpdateSettings(
+            isPublicJoinEnabled: true,
+            isApiOnboardingEnabled: false,
+            isPublicDirectoryEnabled: true,
+            verificationMode: VerificationMode.None,
+            approvalMode: ApprovalMode.Manual);
 
-        // Approve the second site
-        var pendingMembership = ring.Memberships.First(m => m.SiteId == site2.Id);
-        ring.ApproveMember(pendingMembership.Id, user.Id);
+        // Add all sites as approved members
+        foreach (var site in sites)
+        {
+            var joinResult = ring.RequestJoin(site.Id);
+            if (joinResult.IsFailure) throw new InvalidOperationException(joinResult.Error);
+
+            var membership = joinResult.Value;
+            ring.ApproveMember(membership.Id, user.Id);
+        }
 
         await db.Rings.AddAsync(ring);
         await db.SaveChangesAsync();

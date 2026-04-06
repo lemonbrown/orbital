@@ -16,8 +16,10 @@ public sealed class SiteConfiguration : IEntityTypeConfiguration<Site>
             .HasConversion(id => id.Value, value => SiteId.From(value));
 
         builder.Property(s => s.OwnerUserId)
-            .HasConversion(id => id.Value, value => UserId.From(value))
-            .IsRequired();
+            .HasConversion(
+                id => (Guid?)id!.Value.Value,
+                value => (UserId?)UserId.From(value!.Value))
+            .IsRequired(false);
 
         builder.Property(s => s.Name).HasMaxLength(100).IsRequired();
         builder.Property(s => s.Description).HasMaxLength(500);

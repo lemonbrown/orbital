@@ -35,5 +35,7 @@ public sealed class RingMembershipConfiguration : IEntityTypeConfiguration<RingM
 
         builder.Property(m => m.OrderIndex).IsRequired();
         builder.Property(m => m.JoinedAt).IsRequired();
+        builder.Property(m => m.ApplicantName).HasMaxLength(200);
+        builder.Property(m => m.ContactEmail).HasMaxLength(256);
     }
 }

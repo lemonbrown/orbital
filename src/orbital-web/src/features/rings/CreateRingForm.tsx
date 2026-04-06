@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Button } from '../../components/Button'
 import { Input } from '../../components/Input'
 import { useCreateRing } from '../../hooks/useRings'
-import { useMySites } from '../../hooks/useSites'
 import { useNavigate } from 'react-router-dom'
 
 interface Props {
@@ -13,10 +12,8 @@ export function CreateRingForm({ onClose }: Props) {
   const [form, setForm] = useState({
     name: '',
     description: '',
-    ownerSiteId: '',
     visibility: 'Public' as 'Public' | 'Unlisted' | 'Private',
   })
-  const { data: sites } = useMySites()
   const createRing = useCreateRing()
   const navigate = useNavigate()
 
@@ -46,26 +43,6 @@ export function CreateRingForm({ onClose }: Props) {
         placeholder="A ring for independent web developers"
       />
       <div className="flex flex-col gap-1">
-        <label htmlFor="owner-site" className="text-sm font-medium text-gray-700">
-          Your site (ring anchor)
-        </label>
-        <select
-          id="owner-site"
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-violet-500 focus:outline-none"
-          value={form.ownerSiteId}
-          onChange={(e) => setForm((f) => ({ ...f, ownerSiteId: e.target.value }))}
-          required
-        >
-          <option value="">Select a site…</option>
-          {sites?.map((s) => (
-            <option key={s.id} value={s.id}>{s.name} — {s.url}</option>
-          ))}
-        </select>
-        {!sites?.length && (
-          <p className="text-xs text-amber-600">You need to add a site first before creating a ring.</p>
-        )}
-      </div>
-      <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">Visibility</label>
         <div className="flex gap-4">
           {(['Public', 'Unlisted', 'Private'] as const).map((v) => (
@@ -89,7 +66,7 @@ export function CreateRingForm({ onClose }: Props) {
       )}
       <div className="flex gap-2 justify-end">
         <Button variant="ghost" type="button" onClick={onClose}>Cancel</Button>
-        <Button type="submit" loading={createRing.isPending} disabled={!form.ownerSiteId}>
+        <Button type="submit" loading={createRing.isPending}>
           Create ring
         </Button>
       </div>

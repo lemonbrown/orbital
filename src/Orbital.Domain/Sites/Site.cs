@@ -6,7 +6,7 @@ namespace Orbital.Domain.Sites;
 
 public sealed class Site : AggregateRoot<SiteId>
 {
-    public UserId OwnerUserId { get; private set; }
+    public UserId? OwnerUserId { get; private set; }
     public string Name { get; private set; } = default!;
     public SiteUrl Url { get; private set; } = default!;
     public string Description { get; private set; } = string.Empty;
@@ -16,7 +16,7 @@ public sealed class Site : AggregateRoot<SiteId>
 
     private Site() { }
 
-    public static Result<Site> Create(UserId ownerId, string name, string url, string? description = null)
+    public static Result<Site> Create(UserId? ownerId, string name, string url, string? description = null)
     {
         if (string.IsNullOrWhiteSpace(name) || name.Length > 100)
             return Result.Failure<Site>("Name must be between 1 and 100 characters.");

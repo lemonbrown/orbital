@@ -36,7 +36,7 @@ public sealed class JoinRingCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var membership = ring.Memberships.Last(m => m.SiteId == siteId);
+        var membership = result.Value;
         return new JoinRingResponse(membership.Id.Value, membership.Status);
     }
 }
